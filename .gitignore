@@ -1,3 +1,8 @@
+.vscode/
+.bash_history
+obj/
+bin/
+
 # Prerequisites
 *.d
 
