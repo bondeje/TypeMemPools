@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "mempool.h"
@@ -35,7 +36,7 @@ void MemPool_del(MemPool * self) {
     free(self);
 }
 
-void * MemPool_nextsize(MemPool * self, size_t size) {
+void * MemPool_malloc(MemPool * self, size_t size) {
     if (self->memory_size - self->memory_consumed < size) {
         return NULL;
     }
@@ -44,8 +45,8 @@ void * MemPool_nextsize(MemPool * self, size_t size) {
     return out;
 }
 
-void * MemPool_nextaligned(MemPool * self, size_t size, size_t alignment) {
-    size_t offset = (alignment - 1 - ((((uintptr_t)(void *)self->memory) - 1) % alignment)) % alignment;
+void * MemPool_aligned_alloc(MemPool * self, size_t size, size_t alignment) {
+    size_t offset = (alignment - ((uintptr_t)(void *)(self->memory + self->memory_consumed) % alignment)) % alignment;
     if (SIZE_MAX - self->memory_consumed < offset || self->memory_size - self->memory_consumed - offset < size) {
         return NULL;
     }
@@ -96,25 +97,64 @@ void MemPoolManager_del(MemPoolManager * self) {
 }
 
 void * MemPoolManager_next(MemPoolManager * self) {
-    return MemPoolManager_nextsize(self, self->size);    
+    return MemPoolManager_malloc(self, self->size);    
 }
 
-void * MemPoolManager_nextsize(MemPoolManager * self, size_t size) {
-    void * out = MemPool_nextsize(self->tail, size);
+// internal only
+void * MemPoolManager_malloc_large(MemPoolManager * self, size_t size) {
+    // creates a new special MemPool and inserts it before the MemPool at the top of the stack
+    MemPool * top = self->tail;
+    MemPool * next = MemPool_new(size, self->alignment_offset, top->prev);
+    if (!next) {
+        return NULL;
+    }
+    self->tail = next;
+    void * out = MemPoolManager_malloc(self, size); // should consume the whole MemPool
+    top->prev = self->tail;
+    self->tail = top;
+    return out;
+}
+
+void * MemPoolManager_malloc(MemPoolManager * self, size_t size) {
+    if (size > self->memory_size) {
+
+    }
+    void * out = MemPool_malloc(self->tail, size);
     if (!out) {
         // try to add a new MemPool
-        self->tail = MemPool_new(self->memory_size, self->alignment_offset, self->tail);
-        out = MemPool_nextsize(self->tail, size);
+        MemPool * next = MemPool_new(self->memory_size, self->alignment_offset, self->tail);
+        if (next) {
+            self->tail = next;
+            out = MemPool_malloc(self->tail, size);
+        }
     }
     return out;
 }
 
-void * MemPoolManager_nextaligned(MemPoolManager * self, size_t size, size_t alignment) {
-    void * out = MemPool_nextaligned(self->tail, size, alignment);
+// internal only
+void * MemPoolManager_aligned_alloc_large(MemPoolManager * self, size_t size, size_t alignment) {
+    // creates a new special MemPool and inserts it before the MemPool at the top of the stack
+    MemPool * top = self->tail;
+    MemPool * next = MemPool_new(size, alignment * ((sizeof(MemPool) - 1) / alignment + 1), top->prev);
+    if (!next) {
+        return NULL;
+    }
+    self->tail = next;
+    void * out = MemPoolManager_aligned_alloc(self, size, alignment); // should consume the whole MemPool
+    top->prev = self->tail;
+    self->tail = top;
+    return out;
+}
+
+void * MemPoolManager_aligned_alloc(MemPoolManager * self, size_t size, size_t alignment) {
+    void * out = MemPool_aligned_alloc(self->tail, size, alignment);
     if (!out) {
         // try to add a new MemPool
-        self->tail = MemPool_new(self->memory_size, self->alignment_offset, self->tail);
-        out = MemPool_nextaligned(self->tail, size, alignment);
+        MemPool * next = MemPool_new(self->memory_size, self->alignment_offset, self->tail);
+        if (next) {
+            self->tail = next;
+            out = MemPool_aligned_alloc(self->tail, size, alignment);
+        }        
     }
     return out;
 }
