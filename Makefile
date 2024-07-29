@@ -1,6 +1,7 @@
+.POSIX:
 CC = gcc
 BIN_DIR = bin
-OBJ_DIR = obj
+OBJ_DIR = src
 SRC_DIR = src
 INC_DIR = include
 TEST_DIR = test
@@ -16,25 +17,20 @@ build_hierarchy:
 	mkdir -p $(OBJ_DIR)
 	mkdir -p $(BIN_DIR)
 
-$(OBJ_DIR)/mempool.o: $(SRC_DIR)/mempool.c
-	$(CC) $(BLDCFLAGS) -c $(IFLAGS) $^ -o $@ $(LFLAGS)
+$(OBJ_DIR)/mempool.o: $(SRC_DIR)/mempool.c $(INC_DIR)/mempool.h
+	$(CC) $(BLDCFLAGS) -c $(IFLAGS) $(SRC_DIR)/mempool.c -o $@ $(LFLAGS)
 
 TEST_SRCS = $(SRC_DIR)/mempool.c $(TEST_DIR)/test_mempoolmgr.c $(TEST_DIR)/test_driver.c $(TEST_DIR)/test_utils.c
 
-$(BIN_DIR)/test_mempool: $(TEST_SRCS)
-	$(CC) $(DBGCFLAGS) $(IFLAGS) $(TEST_SRCS) -o $(BIN_DIR)/test_mempool
-
-test: build_hierarchy $(BIN_DIR)/test_mempool
-	$(BIN_DIR)/test_mempool
+test: build_hierarchy $(TEST_SRCS)
+	$(CC) $(DBGCFLAGS) $(IFLAGS) $(TEST_SRCS) -o $(BIN_DIR)/$@
+	$(BIN_DIR)/$@
 
 TEST_SPEED_SRCS = $(SRC_DIR)/mempool.c $(TEST_DIR)/test_speed.c
 
-$(BIN_DIR)/test_speed: $(TEST_SPEED_SRCS)
-	$(CC) $(CFLAGS) -O0 $(IFLAGS) -Wno-unused-variable $(TEST_SPEED_SRCS) -o $(BIN_DIR)/test_speed
-
-test_speed: build_hierarchy $(BIN_DIR)/test_speed 
-	$(BIN_DIR)/test_speed
+test_speed: build_hierarchy $(TEST_SPEED_SRCS)
+	$(CC) $(CFLAGS) -O0 $(IFLAGS) -Wno-unused-variable $(TEST_SPEED_SRCS) -o $(BIN_DIR)/$@
 
 clean:
-	rm -rf bin
-	rm -rf obj
+	rm -rf $(BIN_DIR)
+	rm -f $(OBJ_DIR)/*.o
