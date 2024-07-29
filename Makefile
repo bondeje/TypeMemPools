@@ -11,7 +11,7 @@ TEST_DIR = test
 CFLAGS = -Wall -Werror -Wextra -pedantic -std=c99 -Wno-unused-parameter -Wno-unused-but-set-variable -DNDEBUG -fPIC
 BLDCFLAGS = $(CFLAGS) -O2
 IFLAGS = -I$(INC_DIR)
-DBGLFLAGS = -lasan -lubsan
+DBGLFLAGS =
 LFLAGS = 
 DBGCFLAGS = $(CFLAGS) -g3 -fsanitize=address,undefined -UNDEBUG -O0 -std=c11
 

@@ -55,3 +55,4 @@ int main(int narg, char ** args) {
 
     return run(size, N, max_pool_ct);
 }
+

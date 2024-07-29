@@ -33,3 +33,4 @@ struct sa3216 {long double data[2];};
 struct sa4816 {long double data[3];};
 struct sa6416 {long double data[4];};
 #endif
+

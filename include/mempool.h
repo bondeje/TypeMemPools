@@ -13,3 +13,4 @@ void MemPoolManager_del(MemPoolManager * self);
 void * MemPoolManager_next(MemPoolManager * self);
 void * MemPoolManager_malloc(MemPoolManager * self, size_t size);
 void * MemPoolManager_aligned_alloc(MemPoolManager * self, size_t size, size_t alignment);
+

@@ -11,3 +11,4 @@ extern _Bool verbose;
 
 #define CHECK(result, failmsg, ...) check(result, "%s-%s-%zu: " failmsg, __FILE__, __func__, __LINE__, __VA_ARGS__)
 int check(_Bool result, char const * failmsg, ...);
+

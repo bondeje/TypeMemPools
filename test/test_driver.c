@@ -51,3 +51,4 @@ int main(int narg, char ** args) {
     printf("Mempool tests %s! (%d errors)!\n", nerrors ? "failed" : "passed", nerrors);
     return nerrors;
 }
+

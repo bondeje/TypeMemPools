@@ -154,3 +154,4 @@ int test_mempoolmgr_aligned_alloc(void) {
 
     return nerrors;
 }
+

@@ -17,3 +17,4 @@ int check(_Bool result, char const * failmsg, ...) {
     }
     return 0;
 }
+
