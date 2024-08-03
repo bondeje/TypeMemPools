@@ -13,9 +13,11 @@ BLDCFLAGS = $(CFLAGS) -O2 -DNDEBUG
 IFLAGS = -I$(INC_DIR)
 DBGLFLAGS =
 LFLAGS = 
-DBGCFLAGS = $(CFLAGS) -g3 -fsanitize=address,undefined -O0 -std=c11
+DBGCFLAGS = $(CFLAGS) -g3 -O0 -std=c11 `if [ -n "$(SANITIZE)" ] ; then echo "-fsanitize=address,undefined"; fi`
 
 all: build_hierarchy $(SRC_DIR)/mempool.o $(SRC_DIR)/mempool.do
+
+.MAIN: all
 
 build_hierarchy: 
 	@mkdir -p $(BIN_DIR)
