@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "mempool.h"
 
@@ -108,16 +109,14 @@ void * MemPoolManager_malloc_large(MemPoolManager * self, size_t size) {
     if (!next) {
         return NULL;
     }
-    self->tail = next;
-    void * out = MemPoolManager_malloc(self, size); // should consume the whole MemPool
-    top->prev = self->tail;
+    top->prev = next;
     self->tail = top;
-    return out;
+    return MemPool_malloc(next, size);
 }
 
 void * MemPoolManager_malloc(MemPoolManager * self, size_t size) {
     if (size > self->memory_size) {
-
+        return MemPoolManager_malloc_large(self, size);
     }
     void * out = MemPool_malloc(self->tail, size);
     if (!out) {
@@ -147,6 +146,9 @@ void * MemPoolManager_aligned_alloc_large(MemPoolManager * self, size_t size, si
 }
 
 void * MemPoolManager_aligned_alloc(MemPoolManager * self, size_t size, size_t alignment) {
+    if (size + alignment > self->memory_size) {
+        return MemPoolManager_aligned_alloc_large(self, size, alignment);
+    }
     void * out = MemPool_aligned_alloc(self->tail, size, alignment);
     if (!out) {
         // try to add a new MemPool

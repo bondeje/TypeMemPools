@@ -13,7 +13,7 @@ BLDCFLAGS = $(CFLAGS) -O2 -DNDEBUG
 IFLAGS = -I$(INC_DIR)
 DBGLFLAGS =
 LFLAGS = 
-DBGCFLAGS = $(CFLAGS) -g3 -O0 -std=c11 `if [ -n "$(SANITIZE)" ] ; then echo "-fsanitize=address,undefined"; fi`
+DBGCFLAGS = $(CFLAGS) -g3 -O0 -std=c11
 
 all: build_hierarchy $(SRC_DIR)/mempool.o $(SRC_DIR)/mempool.do
 
@@ -25,7 +25,8 @@ build_hierarchy:
 TEST_SRCS = $(SRC_DIR)/mempool.do $(TEST_DIR)/test_mempoolmgr.do $(TEST_DIR)/test_driver.do $(TEST_DIR)/test_utils.do
 
 test: build_hierarchy $(TEST_SRCS)
-	$(CC) $(DBGCFLAGS) $(TEST_SRCS) -o $(BIN_DIR)/$@ $(DBGLFLAGS)
+	if [ -n "$(SANITIZE)" ] ; then export DBGOPT="-fsanitize=address,undefined"; else export DBGOPT="" ; fi ; \
+	$(CC) $(DBGCFLAGS) $$DBGOPT $(TEST_SRCS) -o $(BIN_DIR)/$@ $(DBGLFLAGS)
 	$(BIN_DIR)/$@
 
 TEST_SPEED_SRCS = $(SRC_DIR)/mempool.c $(TEST_DIR)/test_speed.c
