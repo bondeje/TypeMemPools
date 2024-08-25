@@ -138,11 +138,9 @@ void * MemPoolManager_aligned_alloc_large(MemPoolManager * self, size_t size, si
     if (!next) {
         return NULL;
     }
-    self->tail = next;
-    void * out = MemPoolManager_aligned_alloc(self, size, alignment); // should consume the whole MemPool
-    top->prev = self->tail;
-    self->tail = top;
-    return out;
+    top->prev = next;
+    //self->tail = top;
+    return MemPool_aligned_alloc(next, size, alignment);
 }
 
 void * MemPoolManager_aligned_alloc(MemPoolManager * self, size_t size, size_t alignment) {
